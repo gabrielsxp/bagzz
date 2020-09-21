@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { RefreshControl, View, Text } from 'react-native';
-import { Container, Scroller, LoadingContainer, FavoriteButton, ProductTitle, ActionButton, ProductSectionDescription, SizeWrapper, SizeText, ColorWrapper, ColorCircle, ProductPrice, ProductDashed, ProductDescription } from './styles';
+import React, { useEffect, useState, useContext } from 'react';
+import { ProductContext } from '../../contexts/ProductContext';
+import { RefreshControl, View, Text, TextInput } from 'react-native';
+import { Container, Scroller, LoadingContainer, FavoriteButton, PostalCodeInput, ProductTitle, ActionButton, ProductSectionDescription, SizeWrapper, SizeText, ColorWrapper, ColorCircle, ProductPrice, ProductDashed, ProductDescription } from './styles';
 import { useNavigation } from '@react-navigation/native';
 import Carousel from '../../components/Carousel';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
@@ -12,6 +13,8 @@ import AsyncActions from '../../AsyncActions';
 
 export default ({ route }) => {
   const navigation = useNavigation();
+  const { state: discount } = useContext(ProductContext);
+  const [originalPrice, setOriginalPrice] = useState(0);
   const [colors, setColors] = useState([]);
   const [sizes, setSizes] = useState([]);
   const [productSizes, setProductSizes] = useState({
@@ -25,6 +28,7 @@ export default ({ route }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentSizeIndex, setCurrentSizeIndex] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [productDetails, setProductDetails] = useState({});
   const [displayProductDetails, setDisplayProductDetails] = useState(false);
 
   useEffect(() => {
@@ -40,6 +44,7 @@ export default ({ route }) => {
       if (stocks.length > 0) {
         const { product } = stocks[0]
         setProduct(product);
+        setOriginalPrice(product.price)
         const imgs = stocks.reduce((acc, a, index) => {
           acc[index] = a.images
           return acc;
@@ -50,6 +55,16 @@ export default ({ route }) => {
         setSizes(getSizes(stocks));
 
         defineProductSizes(stocks[0].size, 0, { colors: getColors(stocks), sizes: getSizes(stocks), product });
+
+        const sizes = getSizes(stocks);
+        console.log(product);
+        setProductDetails({
+          description: product.description,
+          x: 20,
+          y: 20,
+          z: 20,
+          weight: product.weight,
+        })
 
       } else {
         setProduct(null);
@@ -82,9 +97,36 @@ export default ({ route }) => {
     setFavoriteAdded(finishedAction);
   }
 
-  const getNewPrice = (price, percentage) => {
-    const factor = 1 + percentage
-    return (price * factor).toFixed(2);
+  const getNewPrice = (price, percentage, start) => {
+    const p = start
+    let value = 0;
+    if (discount) {
+      const { discounts } = discount;
+      let values = [];
+      if (typeof discounts['all'] === 'object') {
+        const value = discounts['all'].value;
+        values.push(value);
+      }
+      if (typeof discounts[p.category] === 'object') {
+        const value = discounts[p.category].value;
+        values.push(value);
+      }
+      if (typeof discounts[p._id] === 'object') {
+        const value = discounts[p._id].value;
+        values.push(value);
+      }
+      if (values.length > 0) {
+        console.log(values);
+        value = values.sort((a, b) => b - a)[0];
+      }
+    }
+    const factor = 1 + percentage;
+    if (value > 0) {
+      console.log(price, percentage, value, factor, price * value * factor);
+      return (price - (price * value * factor)).toFixed(2);
+    } else {
+      return (price * factor).toFixed(2);
+    }
   }
 
   const getColors = (stocks) => {
@@ -128,16 +170,22 @@ export default ({ route }) => {
   }
 
   const calculateFlutuation = (colorIndex, sizeIndex, data = null) => {
-    let factors = 0
-    let p = product
+    let factors = 0;
+    let p = product;
+    let currentPriceUpdated = 0
     if (data) {
       factors = data.colors[colorIndex].valueFlutuation + data.sizes[sizeIndex].valueFlutuation;
-      p = data.product
+      p = data.product;
+      currentPriceUpdated = ((1 + factors) * p.price).toFixed(2);
+      console.log('factors')
+      console.log(factors);
     } else {
       factors = colors[colorIndex].valueFlutuation + sizes[sizeIndex].valueFlutuation;
+      currentPriceUpdated = ((1 + factors) * originalPrice).toFixed(2);
+      console.log(currentPriceUpdated);
     }
     let currentProduct = Object.assign({}, p);
-    currentProduct = { ...currentProduct, newPrice: getNewPrice(currentProduct.price, factors) };
+    currentProduct = { ...currentProduct, price: currentPriceUpdated, newPrice: getNewPrice(currentPriceUpdated, factors, currentProduct) };
     setProduct(Object.assign({}, currentProduct));
   }
 
@@ -268,7 +316,7 @@ export default ({ route }) => {
       !refreshing && !product && <NotFound text={'Produto sem estoque no momento'} />
     }
     {
-      displayProductDetails && <ProductDetails toggle={toggleDetailsModal} show={displayProductDetails} />
+      displayProductDetails && <ProductDetails details={productDetails} toggle={toggleDetailsModal} show={displayProductDetails} />
     }
   </Container >
 }

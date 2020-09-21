@@ -6,6 +6,38 @@ const axiosInstance = axios.create({
 });
 
 export default {
+  async getGlobalDiscounts() {
+    const response = await axiosInstance.get('global-discounts')
+    const discounts = response.data.data.discounts.reduce((acc, current) => {
+      const items = ['products', 'category', 'banner'];
+      const validForAll = items.every(item => current[item].length === 0);
+      if (validForAll) {
+        acc['all'] = { value: current.value }
+      } else {
+        if (current.products.length > 0) {
+          const items = current.products
+          items.map((item) => {
+            acc[item] = { value: current.value };
+          })
+        }
+        if (current.category.length > 0) {
+          const items = current.category
+          items.map((item) => {
+            acc[item] = { value: current.value };
+          })
+        }
+        if (current.banner.length > 0) {
+          const items = current.banner
+          items.map((item) => {
+            acc[item] = { value: current.value };
+          })
+        }
+      }
+      return acc
+    }, {})
+    console.log('discounts returned: ', discounts);
+    return discounts;
+  },
   async getBanners() {
     const response = await axiosInstance.get('banners')
     const banners = response.data.data.banners;

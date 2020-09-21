@@ -1,7 +1,7 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import AllCategories from '../screens/AllCategories';
-import CategoryProduct from '../screens/CategoryProduct';
+import CategoryProduct from '../screens/CategoryProducts';
 
 const Stack = createStackNavigator();
 

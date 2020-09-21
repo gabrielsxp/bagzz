@@ -27,7 +27,7 @@ export default ({ details, show, toggle }) => {
       </View>
       <View style={{ justifyContent: 'flex-start', alignItems: 'flex-start', flexDirection: 'column', width: '100%', marginTop: 10 }}>
         <Text style={{ fontSize: 14, color: 'black', fontWeight: 'bold' }}>Descrição</Text>
-        <Text style={{ fontSize: 16, lineHeight: 18, color: 'black' }}>Enim aute amet aute anim minim aute labore ex excepteur duis magna est est incididunt. Dolore voluptate nisi aliqua est esse. Aute proident ullamco exercitation minim mollit incididunt. Sint adipisicing quis id ad cupidatat veniam incididunt veniam laborum culpa fugiat consectetur esse. Nostrud mollit excepteur ut commodo in sit consequat reprehenderit occaecat qui fugiat nisi consectetur sint. Labore reprehenderit et irure laborum velit culpa tempor cillum et. Ad cupidatat occaecat adipisicing cupidatat consequat ullamco tempor quis.</Text>
+        <Text style={{ fontSize: 16, lineHeight: 18, color: 'black' }}>{details.description}</Text>
       </View>
     </View>
   </Modal>

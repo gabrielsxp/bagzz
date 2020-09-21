@@ -1,20 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { RefreshControl } from 'react-native';
 import { Container, LoadingContainer, Scroller, CategoriesContainer, styles, ContainerSection, SectionText, ContainerCheckAll, CheckAllButton, CheckAllButtonText } from './styles';
 import Carousel from '../../components/Carousel';
 import ProductCard from '../../components/ProductCard';
 import CategoryCard from '../../components/CategoryCard';
 import Api from '../../Api';
+import { ProductContext } from '../../contexts/ProductContext';
 import { useNavigation } from '@react-navigation/native';
 
 export default () => {
+  const { state: discounts } = useContext(ProductContext);
   const [banners, setBanners] = useState([]);
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   RefreshControl
   const navigator = useNavigation();
-  const buscarTudo = async () => {
+
+  const searchEverything = async () => {
     let promises = []
     const getBanners = () => {
       return Api.getBanners();
@@ -48,10 +51,10 @@ export default () => {
     }
   }
   useEffect(() => {
-    buscarTudo();
+    searchEverything();
   }, []);
   const onRefresh = () => {
-    buscarTudo();
+    searchEverything();
   }
   const changeStack = (stackName) => {
     navigator.navigate(stackName);
@@ -83,11 +86,14 @@ export default () => {
                 title={product.name}
                 image={product.mainImage}
                 uri={product._id}
+                price={product.price}
+                category={product.category}
+                discount={discounts}
               />
             })
           }
           <ContainerCheckAll>
-            <CheckAllButton onPress={() => changeStack('ProductsStack')}>
+            <CheckAllButton onPress={() => changeStack('LastProducts')}>
               <CheckAllButtonText>
                 TODOS OS LANÇAMENTOS
             </CheckAllButtonText>
@@ -120,7 +126,7 @@ export default () => {
           }
           <ContainerCheckAll>
             <CheckAllButton>
-              <CheckAllButtonText onPress={() => changeStack('CategoriesStack')}>
+              <CheckAllButtonText onPress={() => changeStack('AllCategories')}>
                 TODAS AS CATEGORIAS
             </CheckAllButtonText>
             </CheckAllButton>

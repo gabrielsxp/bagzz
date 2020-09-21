@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { ProductContext } from '../../contexts/ProductContext';
 import ProductCard from '../../components/ProductCard';
 import { Container, ProductsContainer, styles, ContainerCheckAll, CheckAllButton, CheckAllButtonText } from './styles';
 import NotFound from '../../components/NotFound';
 import Api from '../../Api';
 
 export default ({ route }) => {
+  const { state: discounts } = useContext(ProductContext);
   const [endOfList, setEndOfList] = useState(false);
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState([]);
@@ -51,7 +53,9 @@ export default ({ route }) => {
             title={product.name}
             image={product.mainImage}
             uri={product._id}
-            full={true}
+            price={product.price}
+            category={product.category}
+            discount={discounts}
           />
         })
       }

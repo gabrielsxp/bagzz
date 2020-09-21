@@ -177,3 +177,10 @@ export const FavoriteButton = styled.TouchableOpacity`
   border-width: 2px;
   border-color: ${props => props.added ? '#ef233c' : 'black'};
 `;
+
+export const PostalCodeInput = styled.View`
+  align-self: flex-start;
+  border-color: black;
+  border-width: 2px;
+  padding: 0px;
+`;
