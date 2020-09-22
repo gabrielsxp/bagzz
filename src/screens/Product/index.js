@@ -177,8 +177,6 @@ export default ({ route }) => {
       factors = data.colors[colorIndex].valueFlutuation + data.sizes[sizeIndex].valueFlutuation;
       p = data.product;
       currentPriceUpdated = ((1 + factors) * p.price).toFixed(2);
-      console.log('factors')
-      console.log(factors);
     } else {
       factors = colors[colorIndex].valueFlutuation + sizes[sizeIndex].valueFlutuation;
       currentPriceUpdated = ((1 + factors) * originalPrice).toFixed(2);

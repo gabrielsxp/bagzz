@@ -1,11 +1,21 @@
+import { useNavigation } from '@react-navigation/native'
 import React from 'react'
-import { View, Text, Image } from 'react-native'
+import { View, Text, Image, TouchableOpacity } from 'react-native'
 import { styles } from './styles'
 
-export const Slide = ({ title, image, cover = true }) => {
+export const Slide = ({ title, image, cover = true, navigate }) => {
+  const navigation = useNavigation();
+
+  const goto = () => {
+    if (navigate) {
+      console.log(navigate);
+      const { name, products, banner } = navigate;
+      navigation.navigate(name, { products, banner });
+    }
+  }
 
   return (
-    <View style={styles.slide}>
+    <TouchableOpacity onPress={goto} style={styles.slide}>
       <Image resizeMode={cover ? 'cover' : 'contain'} source={{ uri: `${image}` }} style={styles.image} />
       {
         typeof title !== 'undefined' && title !== '' && <View style={styles.containerText}>
@@ -20,7 +30,7 @@ export const Slide = ({ title, image, cover = true }) => {
           }
         </View>
       }
-    </View>
+    </TouchableOpacity>
   );
 }
 

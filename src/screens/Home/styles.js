@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native'
 
 export const styles = StyleSheet.create({
   containerStyle: {
-    paddingTop: 20,
+    paddingTop: 10,
     paddingBottom: 100,
     width: '100%',
     flexDirection: 'row',
@@ -55,7 +55,7 @@ export const Container = styled.SafeAreaView`
 `;
 
 export const LoadingContainer = styled.View`
-  background: #e0e0e0;
+  background: #F1F1F1;
   height: 250px;
   width: 100%;
 `;

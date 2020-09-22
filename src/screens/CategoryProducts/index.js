@@ -56,6 +56,7 @@ export default ({ route }) => {
             price={product.price}
             category={product.category}
             discount={discounts}
+            full={true}
           />
         })
       }

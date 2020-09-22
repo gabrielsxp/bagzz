@@ -7,8 +7,8 @@ import HamburgerIcon from '../assets/menu.svg';
 const Stack = createStackNavigator();
 
 export default () => (
-  <Stack.Navigator initialRouteName="Preload">
-    <Stack.Screen screenOptions={{ headerShown: false }} name="Preload" component={Preload}></Stack.Screen>
+  <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Preload">
+    <Stack.Screen name="Preload" component={Preload}></Stack.Screen>
     <Stack.Screen option={{
       title: 'bagzz',
     }} name="MainTab" component={MainTab}></Stack.Screen>

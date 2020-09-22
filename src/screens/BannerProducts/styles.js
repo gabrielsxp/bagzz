@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native'
 
 export const styles = StyleSheet.create({
   containerStyle: {
-    paddingTop: 40,
+    paddingTop: 20,
     paddingBottom: 100,
     width: '100%',
     flexDirection: 'row',
@@ -51,7 +51,7 @@ export const CheckAllButtonText = styled.Text`
 export const Container = styled.SafeAreaView`
   background-color: #FFFFFF;
   flex: 1;
-  padding-top: 0px;
+  padding-top: 20px;
   padding-bottom: 100px;
   padding-horizontal: 10px;
 `;

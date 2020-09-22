@@ -6,7 +6,7 @@ import { styles } from './styles'
 
 export const Carousel = (props) => {
 
-  const { items, style, onlyImages } = props;
+  const { items, style, onlyImages, navigate } = props;
   const itemsPerInterval = props.itemsPerInterval === undefined
     ? 1
     : props.itemsPerInterval;
@@ -77,14 +77,24 @@ export const Carousel = (props) => {
               );
             default:
               return (
-                <Slide
-                  key={index}
-                  image={onlyImages ? item : item.image}
-                  label={item.name}
-                  value={item.description}
-                  title={item.text}
-                  cover={!onlyImages}
-                />
+                navigate ?
+                  <Slide
+                    key={index}
+                    image={onlyImages ? item : item.image}
+                    label={item.name}
+                    value={item.description}
+                    title={item.text}
+                    cover={!onlyImages}
+                    navigate={{ name: navigate.name, products: item.products, banner: item._id }}
+                  />
+                  : <Slide
+                    key={index}
+                    image={onlyImages ? item : item.image}
+                    label={item.name}
+                    value={item.description}
+                    title={item.text}
+                    cover={!onlyImages}
+                  />
               );
           }
         })}

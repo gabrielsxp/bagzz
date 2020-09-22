@@ -71,6 +71,7 @@ export default () => {
                 itemsPerInterval={1}
                 showBullets={true}
                 items={banners}
+                navigate={{ name: 'BannerProducts' }}
               />
           }
           {
