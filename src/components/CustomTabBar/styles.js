@@ -18,6 +18,29 @@ export const TabArea = styled.View`
   margin: 10px 5px;
 `;
 
+export const CartCounterWrapper = styled.View`
+  position: absolute;
+  bottom: 15px;
+  right: 25px;
+  border-width: 1px;
+  border-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 100px;
+  display: flex;
+  justify-content: center;
+  background-color: black;
+`;
+
+export const CartCounterText = styled.Text`
+  font-size: 12px;
+  color: white;
+  font-weight: bold;
+`;
+
 export const TabIcon = styled.TouchableOpacity`
   flex: 1;
   justify-content: center;

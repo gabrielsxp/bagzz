@@ -13,7 +13,7 @@ import AsyncActions from '../../AsyncActions';
 
 export default ({ route }) => {
   const navigation = useNavigation();
-  const { state: discount } = useContext(ProductContext);
+  const { state: discount, dispatch: productDispatch } = useContext(ProductContext);
   const [originalPrice, setOriginalPrice] = useState(0);
   const [colors, setColors] = useState([]);
   const [sizes, setSizes] = useState([]);
@@ -83,6 +83,24 @@ export default ({ route }) => {
   const checkFavorite = async (productId) => {
     const isFavorited = await AsyncActions.isProductFavorited(productId);
     setFavoriteAdded(isFavorited);
+  }
+
+  const addProductToCart = () => {
+    let cart = Object.assign({}, discount.cart);
+    const p = { ...product, image: images[currentIndex][0], color: colors[currentIndex], size: sizes[currentSizeIndex], newPrice: product.newPrice < product.price ? product.newPrice : product.price };
+    let products = Object.assign([], cart.products);
+    products = products.concat(p);
+    console.log(products);
+    const price = discount.totalPrice;
+    let newPrice = price + p.price;
+
+    cart.products = Object.assign([], products);
+    cart.totalPrice = newPrice
+
+    productDispatch({
+      type: 'setCart',
+      payload: cart
+    })
   }
 
   const addProductToFavorites = async () => {
@@ -295,7 +313,7 @@ export default ({ route }) => {
           </View>
         </View>
         <View style={{ width: '100%', marginTop: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <ActionButton>
+          <ActionButton onPress={() => addProductToCart()}>
             <Text style={{
               fontSize: 16, textTransform: 'uppercase', lineHeight: 18, color: 'black', fontWeight: 'bold'
             }}>

@@ -6,6 +6,43 @@ const axiosInstance = axios.create({
 });
 
 export default {
+  async renovateToken(currentToken) {
+    console.log('passed token: ', currentToken);
+    try {
+      const response = await axiosInstance('renovate-token', { headers: { Authorization: `Bearer ${currentToken}` } });
+      console.log('resposta', response.data.data.token);
+      return response.data.data.token
+    } catch (error) {
+      console.log(error);
+      return null
+    }
+  },
+  async signIn(email, password) {
+    try {
+      const response = await axiosInstance.post('signin', { email, password })
+      if (response.data.data.error === 0) {
+        return { error: 0, user: response.data.data.data.user, token: response.data.data.data.token };
+      } else {
+        return { error: 1, data: response.data.data.error }
+      }
+    } catch (error) {
+      console.log(error);
+      return { error: 1, data: 'E-mail ou senha incorretos !' };
+    }
+  },
+  async signUp(name, email, password) {
+    try {
+      const response = await axiosInstance.post('signup', { name, email, password });
+      if (response.data.data.error === 0) {
+        return { error: 0, user: response.data.data.user, token: response.data.data.token };
+      } else {
+        return { error: 1, data: response.data.data.error };
+      }
+    } catch (error) {
+      console.log(error);
+      return { error: 1, data: 'E-mail já existente ! Cadastre outro por favor.' };
+    }
+  },
   async getGlobalDiscounts() {
     const response = await axiosInstance.get('global-discounts')
     const discounts = response.data.data.discounts.reduce((acc, current) => {

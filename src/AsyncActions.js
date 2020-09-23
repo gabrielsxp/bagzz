@@ -52,5 +52,17 @@ export default {
         resolve(false);
       }
     })
+  },
+  async setToken(token) {
+    console.log('saving token: ', token);
+    await AsyncStorage.setItem('token', JSON.stringify(token));
+  },
+  async getToken() {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      return JSON.parse(token);
+    } catch (error) {
+      return null;
+    }
   }
 };
