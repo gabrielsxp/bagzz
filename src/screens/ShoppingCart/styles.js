@@ -39,11 +39,18 @@ export const ProductDescriptionSpan = styled.Text`
   color: #333333;
 `;
 
+export const ProductPriceDashed = styled.Text`
+  font-size: 16px;
+  color: #848484;
+  font-weight: bold;
+  margin-top: 20px;
+  text-decoration: line-through;
+`;
+
 export const ProductPrice = styled.Text`
   font-size: 20px;
   color: #000000;
   font-weight: bold;
-  margin-top: 20px;
 `;
 
 export const ProductPriceCheckout = styled.Text`
@@ -108,4 +115,16 @@ export const ProductQuantityValueWrapper = styled.View`
 export const ProductQuantityValueText = styled.Text`
   font-size: 16px;
   color: black;
+`;
+
+export const RemoveProductButtonWrapper = styled.TouchableOpacity`
+  align-self: flex-end;
+  background-color: transparent;
+  width: 40px;
+  height: 40px;
+  border-width: 2px;
+  border-color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;

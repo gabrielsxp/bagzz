@@ -42,7 +42,7 @@ export default ({ title, image, price, uri, category, index, full, discount }) =
   return (
     <Container style={{ marginBottom: full ? 15 : (index % 2 === 0) ? 15 : 0, marginRight: full ? 0 : (index % 2 === 0) ? 15 : 0 }} onPress={() => goto(uri)}>
       {
-        discount && <DiscountWrapper>
+        discountPercentage && <DiscountWrapper>
           <DiscountPrice>{discountPercentage}</DiscountPrice>
         </DiscountWrapper>
       }
@@ -57,6 +57,9 @@ export default ({ title, image, price, uri, category, index, full, discount }) =
           <CardPrice>R$ {newPrice.toLocaleString()}</CardPrice>
         </View>
       }
-    </Container>
+      {
+        price && !newPrice && < CardPrice > R$ {price.toLocaleString()}</CardPrice>
+      }
+    </Container >
   );
 }

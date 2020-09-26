@@ -14,7 +14,9 @@ import AsyncActions from '../../AsyncActions';
 export default ({ route }) => {
   const navigation = useNavigation();
   const { state: discount, dispatch: productDispatch } = useContext(ProductContext);
+  const [allStocks, setAllStocks] = useState([]);
   const [originalPrice, setOriginalPrice] = useState(0);
+  const [amount, setAmount] = useState(0);
   const [colors, setColors] = useState([]);
   const [sizes, setSizes] = useState([]);
   const [productSizes, setProductSizes] = useState({
@@ -26,7 +28,7 @@ export default ({ route }) => {
   const [favoriteAdded, setFavoriteAdded] = useState(false);
   const [images, setImages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [currentSizeIndex, setCurrentSizeIndex] = useState(0);
+  const [currentSizeIndex, setCurrentSizeIndex] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [productDetails, setProductDetails] = useState({});
   const [displayProductDetails, setDisplayProductDetails] = useState(false);
@@ -42,8 +44,10 @@ export default ({ route }) => {
       const { uri: uid } = route.params;
       const stocks = await Api.getStock(uid);
       if (stocks.length > 0) {
-        const { product } = stocks[0]
+        const { product, amount } = stocks[0]
+        setAllStocks(stocks);
         setProduct(product);
+        setAmount(amount);
         setOriginalPrice(product.price)
         const imgs = stocks.reduce((acc, a, index) => {
           acc[index] = a.images
@@ -51,13 +55,14 @@ export default ({ route }) => {
         }, {});
         setImages(imgs);
 
-        setColors(getColors(stocks));
-        setSizes(getSizes(stocks));
-
-        defineProductSizes(stocks[0].size, 0, { colors: getColors(stocks), sizes: getSizes(stocks), product });
-
+        const colors = getColors(stocks);
         const sizes = getSizes(stocks);
-        console.log(product);
+        console.log('colors: ', colors);
+        setColors(colors);
+        setSizes(sizes);
+        console.log(sizes[colors[currentIndex]._id])
+
+        defineProductSizes(sizes[colors[0]._id][0], 0, 0, { colors, sizes, product });
         setProductDetails({
           description: product.description,
           x: 20,
@@ -71,7 +76,6 @@ export default ({ route }) => {
       }
       setRefreshing(false);
     } catch (error) {
-      console.log(error);
       setRefreshing(false);
     }
   }
@@ -87,15 +91,16 @@ export default ({ route }) => {
 
   const addProductToCart = () => {
     let cart = Object.assign({}, discount.cart);
-    const p = { ...product, image: images[currentIndex][0], color: colors[currentIndex], size: sizes[currentSizeIndex], newPrice: product.newPrice < product.price ? product.newPrice : product.price };
+    let p = { ...product, image: images[currentIndex][0], color: colors[currentIndex], size: sizes[colors[currentIndex]._id][currentSizeIndex], price: product.price, newPrice: product.newPrice < product.price ? product.newPrice : product.price, maxAmount: allStocks[currentIndex].amount, quantity: 1, stock: allStocks[currentIndex]._id };
     let products = Object.assign([], cart.products);
-    products = products.concat(p);
-    console.log(products);
-    const price = discount.totalPrice;
-    let newPrice = price + p.price;
+    if (!cart.products.find(p => p.stock === allStocks[currentIndex]._id)) {
+      products = products.concat(p);
+    } else {
+      let index = cart.products.findIndex(p => p.stock === allStocks[currentIndex]._id)
+      cart.products[index].quantity++
+    }
 
     cart.products = Object.assign([], products);
-    cart.totalPrice = newPrice
 
     productDispatch({
       type: 'setCart',
@@ -134,13 +139,11 @@ export default ({ route }) => {
         values.push(value);
       }
       if (values.length > 0) {
-        console.log(values);
         value = values.sort((a, b) => b - a)[0];
       }
     }
     const factor = 1 + percentage;
     if (value > 0) {
-      console.log(price, percentage, value, factor, price * value * factor);
       return (price - (price * value * factor)).toFixed(2);
     } else {
       return (price * factor).toFixed(2);
@@ -153,52 +156,60 @@ export default ({ route }) => {
       acc.push(color);
       return acc;
     }, []);
-    console.log(colors);
     return colors;
   }
 
   const getSizes = (stocks) => {
     const sizes = stocks.reduce((acc, current) => {
-      const size = current.size;
-      acc.unshift(size);
+      if (typeof acc[current.color._id] === 'undefined') {
+        acc[current.color._id] = []
+      }
+      acc[current.color._id].unshift(current.size);
       return acc;
-    }, []);
+    }, {});
 
     return sizes;
   }
 
-  const defineProductSizes = (size, index, start = null) => {
+  const defineProductSizes = (size, index, colorIndex, start = null) => {
     const sizes = {
       x: size.chest,
       y: size.waist,
       z: size.hips
     }
+    setCurrentIndex(colorIndex);
     setCurrentSizeIndex(index);
     setProductSizes(Object.assign({}, sizes));
     if (start) {
       calculateFlutuation(0, 0, { colors: start.colors, sizes: start.sizes, product: start.product });
     } else {
-      calculateFlutuation(currentIndex, index);
+      calculateFlutuation(colorIndex, index);
     }
   }
 
   const changeImages = (index) => {
-    setCurrentIndex(index);
-    calculateFlutuation(index, currentSizeIndex);
+    // calculateFlutuation(index, currentSizeIndex);
+    defineProductSizes(sizes[colors[index]._id][currentSizeIndex], currentSizeIndex, index)
   }
 
   const calculateFlutuation = (colorIndex, sizeIndex, data = null) => {
     let factors = 0;
     let p = product;
     let currentPriceUpdated = 0
+    console.log(colorIndex, sizeIndex);
     if (data) {
-      factors = data.colors[colorIndex].valueFlutuation + data.sizes[sizeIndex].valueFlutuation;
+      console.log('data: ', data);
+      let c = data.colors[colorIndex].valueFlutuation;
+      let s = data.sizes[data.colors[colorIndex]._id][sizeIndex].valueFlutuation ?? 0;
+      console.log('c: ', c);
+      console.log('s: ', s);
+      factors = c + s;
       p = data.product;
       currentPriceUpdated = ((1 + factors) * p.price).toFixed(2);
     } else {
-      factors = colors[colorIndex].valueFlutuation + sizes[sizeIndex].valueFlutuation;
+      factors = colors[colorIndex].valueFlutuation + sizes[colors[colorIndex]._id][sizeIndex].valueFlutuation;
+      console.log('factors: ', factors);
       currentPriceUpdated = ((1 + factors) * originalPrice).toFixed(2);
-      console.log(currentPriceUpdated);
     }
     let currentProduct = Object.assign({}, p);
     currentProduct = { ...currentProduct, price: currentPriceUpdated, newPrice: getNewPrice(currentPriceUpdated, factors, currentProduct) };
@@ -264,6 +275,7 @@ export default ({ route }) => {
                     {
                       colors.map((color, index) => {
                         return <ColorWrapper selected={currentIndex === index} onPress={() => changeImages(index)} key={index}>
+                          <Text style={{ fontSize: 30, color: 'black' }}>{index}</Text>
                           <ColorCircle onPress={() => changeImages(index)} color={color.hex} />
                         </ColorWrapper>
                       })
@@ -273,13 +285,13 @@ export default ({ route }) => {
               </View>
             }
             {
-              sizes && sizes.length > 0 && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginTop: 10 }}>
+              colors && colors[currentIndex] && sizes[colors[currentIndex]._id] && sizes[colors[currentIndex]._id].length > 0 && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginTop: 10 }}>
                 <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                   <ProductSectionDescription>Sizes</ProductSectionDescription>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, width: '100%' }}>
                     {
-                      sizes.map((size, index) => {
-                        return <SizeWrapper selected={currentSizeIndex === index} onPress={() => defineProductSizes(size, index)} key={index}>
+                      sizes[colors[currentIndex]._id].map((size, index) => {
+                        return <SizeWrapper selected={currentSizeIndex === index} onPress={() => defineProductSizes(size, index, currentIndex)} key={index}>
                           <SizeText selected={currentSizeIndex === index}>
                             {size.name}
                           </SizeText>
