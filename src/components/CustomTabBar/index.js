@@ -22,6 +22,14 @@ export default ({ state, navigation }) => {
     navigation.navigate(screenName);
   }
 
+  const reset = (screenName) => {
+    console.log(screenName);
+    navigation.reset({
+      index: 0,
+      routes: [{ name: screenName }],
+    })
+  }
+
   return (
     <TabArea>
       <TabIcon onPress={() => goto('Home')}>
@@ -33,7 +41,7 @@ export default ({ state, navigation }) => {
       <TabIcon onPress={() => goto('Home')}>
         <FavoriteIcon width="20" height="20" fill="#000000" />
       </TabIcon>
-      <TabIcon onPress={() => goto('CartStack')}>
+      <TabIcon onPress={() => reset('CartStack')}>
         <CartIcon width="20" height="20" fill="#000000" />
         {
           totalProducts > 0 && <CartCounterWrapper>

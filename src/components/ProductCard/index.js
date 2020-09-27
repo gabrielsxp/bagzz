@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Container, CardTitle, CardOldPrice, CardPrice, DiscountPrice, DiscountWrapper } from './styles';
-import { Image, View } from 'react-native';
+import { Image, View, Text } from 'react-native';
 
 export default ({ title, image, price, uri, category, index, full, discount }) => {
   const navigation = useNavigation();
@@ -52,13 +52,13 @@ export default ({ title, image, price, uri, category, index, full, discount }) =
       <Image style={{ width: 120, height: undefined, aspectRatio: 1 }} resizeMode="contain" source={{ uri: image }} />
       <CardTitle>{title}</CardTitle>
       {
-        price && newPrice && <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+        price && newPrice && <View style={{ flexDirection: 'column', alignItems: 'center', width: '100%' }}>
           <CardOldPrice>R$ {price.toLocaleString()}</CardOldPrice>
           <CardPrice>R$ {newPrice.toLocaleString()}</CardPrice>
         </View>
       }
       {
-        price && !newPrice && < CardPrice > R$ {price.toLocaleString()}</CardPrice>
+        price && !newPrice && < CardPrice ><Text style={{ fontSize: 10, color: 'black' }}>a partir de</Text> R$ {price.toLocaleString()}</CardPrice>
       }
     </Container >
   );

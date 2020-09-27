@@ -5,7 +5,7 @@ import { Container, Scroller, LoadingContainer, FavoriteButton, PostalCodeInput,
 import { useNavigation } from '@react-navigation/native';
 import Carousel from '../../components/Carousel';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { faRulerVertical, faRulerHorizontal, faRulerCombined, faHeart } from '@fortawesome/free-solid-svg-icons'
+import { faRulerVertical, faRulerHorizontal, faRulerCombined, faHeart, faWeight } from '@fortawesome/free-solid-svg-icons'
 import ProductDetails from '../../components/ProductDetails';
 import NotFound from '../../components/NotFound';
 import Api from '../../Api'
@@ -49,13 +49,9 @@ export default ({ route }) => {
         setProduct(product);
         setAmount(amount);
         setOriginalPrice(product.price)
-        const imgs = stocks.reduce((acc, a, index) => {
-          acc[index] = a.images
-          return acc;
-        }, {});
-        setImages(imgs);
 
-        const colors = getColors(stocks);
+        const { colors, images } = getColors(stocks);
+        setImages(images);
         const sizes = getSizes(stocks);
         console.log('colors: ', colors);
         setColors(colors);
@@ -91,7 +87,13 @@ export default ({ route }) => {
 
   const addProductToCart = () => {
     let cart = Object.assign({}, discount.cart);
-    let p = { ...product, image: images[currentIndex][0], color: colors[currentIndex], size: sizes[colors[currentIndex]._id][currentSizeIndex], price: product.price, newPrice: product.newPrice < product.price ? product.newPrice : product.price, maxAmount: allStocks[currentIndex].amount, quantity: 1, stock: allStocks[currentIndex]._id };
+    const postalData = {
+      postalX: allStocks[currentIndex].postalX,
+      postalY: allStocks[currentIndex].postalY,
+      postalZ: allStocks[currentIndex].postalZ,
+      packageWeight: allStocks[currentIndex].packageWeight
+    }
+    let p = { ...product, image: images[currentIndex][0], color: colors[currentIndex], size: sizes[colors[currentIndex]._id][currentSizeIndex], price: product.price, newPrice: product.newPrice < product.price ? product.newPrice : product.price, maxAmount: allStocks[currentIndex].amount, quantity: 1, stock: allStocks[currentIndex]._id, postalData };
     let products = Object.assign([], cart.products);
     if (!cart.products.find(p => p.stock === allStocks[currentIndex]._id)) {
       products = products.concat(p);
@@ -151,12 +153,18 @@ export default ({ route }) => {
   }
 
   const getColors = (stocks) => {
+    let exists = [];
+    let images = [];
     const colors = stocks.reduce((acc, current) => {
       const color = current.color
-      acc.push(color);
+      if (!exists.find(c => c === color._id)) {
+        acc.unshift(color);
+        images.unshift(current.images);
+        exists.push(color._id);
+      }
       return acc;
     }, []);
-    return colors;
+    return { colors, images };
   }
 
   const getSizes = (stocks) => {
@@ -275,7 +283,6 @@ export default ({ route }) => {
                     {
                       colors.map((color, index) => {
                         return <ColorWrapper selected={currentIndex === index} onPress={() => changeImages(index)} key={index}>
-                          <Text style={{ fontSize: 30, color: 'black' }}>{index}</Text>
                           <ColorCircle onPress={() => changeImages(index)} color={color.hex} />
                         </ColorWrapper>
                       })
@@ -317,11 +324,10 @@ export default ({ route }) => {
               <FontAwesomeIcon style={{ fontSize: 30, color: '#848484' }} icon={faRulerCombined}></FontAwesomeIcon>
               <ProductSectionDescription>{productSizes.z} cm</ProductSectionDescription>
             </View>
-            <ActionButton onPress={() => setDisplayProductDetails(true)} full={true}>
-              <Text style={{ fontSize: 12, textTransform: 'uppercase', lineHeight: 18, color: 'black', fontWeight: 'bold' }}>
-                Detalhes
-              </Text>
-            </ActionButton>
+            <View style={{ flexDirection: 'row', marginTop: 20, justifyContent: 'space-between', alignItems: 'center' }}>
+              <FontAwesomeIcon style={{ fontSize: 30, color: '#848484' }} icon={faWeight}></FontAwesomeIcon>
+              <ProductSectionDescription>{product.weight} kg</ProductSectionDescription>
+            </View>
           </View>
         </View>
         <View style={{ width: '100%', marginTop: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -332,9 +338,9 @@ export default ({ route }) => {
               + carrinho
               </Text>
           </ActionButton>
-          <ActionButton background={'black'}>
+          <ActionButton onPress={() => setDisplayProductDetails(true)} background={'black'}>
             <Text style={{ fontSize: 16, textTransform: 'uppercase', lineHeight: 18, color: 'white', fontWeight: 'bold' }}>
-              Comprar
+              Detalhes
               </Text>
           </ActionButton>
         </View>

@@ -6,6 +6,36 @@ const axiosInstance = axios.create({
 });
 
 export default {
+  async findCouponByKeyword(keyword) {
+    console.log('keyword: ', keyword);
+    try {
+      const response = await axiosInstance(`discount-keyword/${keyword}`);
+      console.log(response.data.data)
+      if (response.data.error === 0) {
+        let coupon = null;
+        if (response.data.data.discount.length > 0) {
+          coupon = response.data.data.discount[0];
+        }
+        console.log('retornei: ', coupon);
+        return coupon;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      return null;
+    }
+  },
+  async getUserActiveCoupons(token) {
+    try {
+      const response = await axiosInstance('discounts?limit=100&page=1', { headers: { Authorization: `Bearer ${token}` } });
+      console.log('discounts: ', response.data.data.discounts);
+
+      return response.data.data.discounts ?? [];
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  },
   async renovateToken(currentToken) {
     console.log('passed token: ', currentToken);
     try {
@@ -119,6 +149,15 @@ export default {
       const response = await axiosInstance.get(`/product-stocks?product=${uid}&page=1&limit=100`)
       const stocks = response.data.data.stocks
       return stocks ?? [];
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async getPostalPrices(data) {
+    console.log(data);
+    try {
+      const response = await axiosInstance.post('calculate-shipment', data);
+      return response.data.data;
     } catch (error) {
       console.log(error);
     }

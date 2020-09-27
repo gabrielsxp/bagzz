@@ -25,10 +25,15 @@ export default () => {
         });
       } else {
         await AsyncActions.setToken(token);
+        const coupons = await Api.getUserActiveCoupons(token);
         userDispatch({
           type: 'setToken',
           payload: token
-        })
+        });
+        userDispatch({
+          type: 'setCoupons',
+          payload: coupons
+        });
         navigation.reset({
           routes: [{ name: 'MainTab' }]
         });

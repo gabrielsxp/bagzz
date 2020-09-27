@@ -82,6 +82,7 @@ export default () => {
           {
             products && products.length > 0 && products.map((product, index) => {
               return <ProductCard
+                full={false}
                 index={index}
                 key={index}
                 title={product.name}

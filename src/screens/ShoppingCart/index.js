@@ -1,17 +1,21 @@
 import React, { useEffect, useContext, useState } from 'react';
+import { UserContext } from '../../contexts/UserContext';
 import { ProductContext } from '../../contexts/ProductContext';
 import { View, Image, Text } from 'react-native';
 import { styles, Container, ProductsContainer, RemoveProductButtonWrapper, ProductPriceDashed, ProductPriceCheckout, ProductName, ProductDescription, ProductDescriptionSpan, ProductPrice, CheckoutText, CheckoutButton, ContainerTop, AddProductWrapper, ProductQuantityChangeButton, ProductQuantityValueWrapper, ProductQuantityValueText } from './styles';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faPlus, faMinus, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import NotFound from '../../components/NotFound';
+import { useNavigation } from '@react-navigation/native';
 
 
 export default () => {
+  const navigation = useNavigation();
   const { state: context, dispatch: productDispatch } = useContext(ProductContext);
   const [total, setTotal] = useState(0);
   const [totalDiscount, setTotalDiscount] = useState(0);
   const [totalWithDiscount, setTotalWithDiscount] = useState(0);
+  const [resume, setResume] = useState([]);
 
   const incrementQuantity = (index) => {
     const cart = Object.assign({}, context.cart);
@@ -25,6 +29,10 @@ export default () => {
         payload: cart
       })
     }
+  }
+
+  const goto = (name) => {
+    navigation.navigate(name, { resume });
   }
 
   const removeProduct = (index) => {
@@ -58,18 +66,30 @@ export default () => {
 
   useEffect(() => {
     let discounts = 0
-    const totalPrice = context.cart.products.reduce((acc, current) => {
+    let resumeObj = { resumes: [], price: 0, discounts: 0 };
+    const totalPrice = context.cart.products.reduce((acc, current, index) => {
+      let resumeData = {};
+      resumeData.product = current;
+      resumeData.totalPrice = parseFloat(current.newPrice)
+      resumeData.price = current.price
+      resumeData.discounts = current.quantity * (current.price - current.newPrice)
       acc += current.quantity * parseFloat(current.newPrice);
       if (current.price !== current.newPrice) {
         discounts += current.quantity * (current.price - current.newPrice)
       }
+
+      resumeObj.resumes.unshift(resumeData);
+      resumeObj.price += current.quantity * parseFloat(current.newPrice);
+      resumeObj.discounts += current.quantity * (current.price - current.newPrice);
+      if (index === context.cart.products.length - 1) {
+        resumeObj.discounts = resumeObj.discounts.toFixed(2);
+      }
+
       return acc;
     }, 0);
-    console.log('descontos: ', discounts);
-    if (discounts > 0) {
-      setTotalDiscount(discounts.toFixed(2));
-      setTotalWithDiscount((discounts + totalPrice).toFixed(2));
-    }
+    setResume(Object.assign({}, resumeObj));
+    setTotalDiscount(discounts.toFixed(2));
+    setTotalWithDiscount((discounts + totalPrice).toFixed(2));
     setTotal(totalPrice.toFixed(2));
   }, [context.cart.products]);
 
@@ -77,18 +97,18 @@ export default () => {
     <ContainerTop>
       <View style={{ flexDirection: 'column' }}>
         {
-          totalWithDiscount > 0 && <ProductPriceDashed>R$ {(totalWithDiscount)}</ProductPriceDashed>
+          totalWithDiscount > total && <ProductPriceDashed>R$ {(totalWithDiscount)}</ProductPriceDashed>
         }
         {
           totalDiscount > 0 && <Text style={{ fontSize: 12, color: '#848484' }}>Descontos: R$ {totalDiscount}</Text>
         }
         <ProductPriceCheckout><Text style={{ fontSize: 12, color: 'black' }}>Total:</Text> R$ {total}</ProductPriceCheckout>
       </View>
-      <CheckoutButton>
-        <CheckoutText>FINALIZAR</CheckoutText>
+      <CheckoutButton onPress={() => goto('CartResume')} disabled={context.cart.products.length === 0}>
+        <CheckoutText>AVANÇAR</CheckoutText>
       </CheckoutButton>
     </ContainerTop>
-    <ProductsContainer contentContainerStyle={styles}>
+    <ProductsContainer contentContainerStyle={styles.containerStyle}>
       {
         context && context.cart.products && context.cart.products.map((product, index) => {
           return <View key={index} style={{ flexDirection: 'row', alignItems: 'center', marginTop: index > 0 ? 40 : 0 }}>
